@@ -22,38 +22,37 @@ Integrated with SOC explanation regularization
 from __future__ import absolute_import, division, print_function
 
 import argparse
-import csv
+# import csv
+import json
 import logging
 import os
 import random
-import sys
-import json
 
 import numpy as np
 import torch
-from torch.utils.data import DataLoader, RandomSampler, SequentialSampler, TensorDataset
-from torch.utils.data.distributed import DistributedSampler
-from torch import nn
-from torch.nn import functional as F
-from tqdm import tqdm, trange
-
-from torch.nn import CrossEntropyLoss, MSELoss
 from scipy.stats import pearsonr, spearmanr
-from sklearn.metrics import matthews_corrcoef, f1_score
-from sklearn.metrics import precision_score, recall_score, roc_auc_score
+from sklearn.metrics import (f1_score, precision_score, recall_score,
+                             roc_auc_score)
+from torch import nn
+from torch.nn import CrossEntropyLoss, MSELoss
+from torch.nn import functional as F
+from torch.utils.data import (DataLoader, RandomSampler, SequentialSampler,
+                              TensorDataset)
+from torch.utils.data.distributed import DistributedSampler
+from tqdm import tqdm, trange
+from transformers import (BertConfig, BertForSequenceClassification,
+                          BertTokenizer)
 
-from bert.file_utils import PYTORCH_PRETRAINED_BERT_CACHE, WEIGHTS_NAME, CONFIG_NAME
-
-#  from bert.modeling import BertForSequenceClassification, BertConfig
-#  from bert.tokenization import BertTokenizer
+from bert.file_utils import (CONFIG_NAME, PYTORCH_PRETRAINED_BERT_CACHE,
+                             WEIGHTS_NAME)
 from bert.optimization import BertAdam, WarmupLinearSchedule
-from transformers import BertConfig, BertForSequenceClassification, BertTokenizer
-
-from loader import HateSpeechProcessor, convert_examples_to_features
-from utils.config import configs, combine_args
-
 # for hierarchical explanation algorithms
 from hiex import SamplingAndOcclusionExplain
+from loader import HateSpeechProcessor, convert_examples_to_features
+from utils.config import combine_args, configs
+
+#  import sys
+
 
 logger = logging.getLogger(__name__)
 
@@ -65,8 +64,9 @@ def simple_accuracy(preds, labels):
 def acc_and_f1(preds, labels, pred_probs):
     acc = simple_accuracy(preds, labels)
     f1 = f1_score(y_true=labels, y_pred=preds, average="macro")
-    p, r = precision_score(y_true=labels, y_pred=preds, average="macro"), recall_score(
-        y_true=labels, y_pred=preds, average="macro"
+    p, r = (
+        precision_score(y_true=labels, y_pred=preds, average="macro"),
+        recall_score(y_true=labels, y_pred=preds, average="macro"),
     )
     try:
         roc = roc_auc_score(y_true=labels, y_score=pred_probs[:, 1], average="macro")
@@ -98,16 +98,11 @@ def main():
         default=None,
         type=str,
         required=True,
-        help="The input data dir. Should contain the .tsv files (or other data files) for the task.",
+        help="The input data dir. \
+        Should contain the .tsv files (or other data files) for the task.",
     )
     parser.add_argument(
-        "--bert_model",
-        default=None,
-        type=str,
-        required=True,
-        help="Bert pre-trained model selected in the list: bert-base-uncased, "
-        "bert-large-uncased, bert-base-cased, bert-large-cased, bert-base-multilingual-uncased, "
-        "bert-base-multilingual-cased, bert-base-chinese.",
+        "--bert_model", default=None, type=str, required=True,
     )
     parser.add_argument(
         "--task_name",
@@ -117,10 +112,7 @@ def main():
         help="The name of the task to train.",
     )
     parser.add_argument(
-        "--task_mode",
-        default=None,
-        type=str,
-        help="The mode of the task to train.",
+        "--task_mode", default=None, type=str, help="The mode of the task to train.",
     )
     parser.add_argument(
         "--output_dir",
@@ -323,7 +315,7 @@ def main():
         torch.cuda.set_device(args.local_rank)
         device = torch.device("cuda", args.local_rank)
         n_gpu = 1
-        # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
+        # Initializes the distributed backend which will take care of sychronizing nodes GPUs
         torch.distributed.init_process_group(backend="nccl")
 
     logging.basicConfig(
@@ -449,8 +441,7 @@ def main():
     ]
     if args.fp16:
         try:
-            from apex.optimizers import FP16_Optimizer
-            from apex.optimizers import FusedAdam
+            from apex.optimizers import FP16_Optimizer, FusedAdam
         except ImportError:
             raise ImportError(
                 "Please install apex from https://www.github.com/nvidia/apex to use distributed and fp16 training."
@@ -563,7 +554,6 @@ def main():
                 logits = model(input_ids, segment_ids, input_mask, labels=None)[0]
 
                 if output_mode == "classification":
-                    # loss_fct = CrossEntropyLoss(class_weight)
                     # boychaboy
                     loss_fct = CrossEntropyLoss()
                     loss = loss_fct(logits.view(-1, num_labels), label_ids.view(-1))

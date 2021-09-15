@@ -63,7 +63,7 @@ def simple_accuracy(preds, labels):
 
 def acc_and_f1(preds, labels, pred_probs):
     acc = simple_accuracy(preds, labels)
-    f1 = f1_score(y_true=labels, y_pred=preds, average="macro")
+    f1 = f1_score(y_true=labels, y_pred=preds, average="macro", zero_division=0)
     p, r = (
         precision_score(y_true=labels, y_pred=preds, average="macro"),
         recall_score(y_true=labels, y_pred=preds, average="macro"),
@@ -373,7 +373,7 @@ def main():
     num_labels = len(label_list)
 
     train_examples = None
-    num_train_optimization_steps = None
+    num_train_optimization_steps = 0
     if args.do_train:
         train_examples = processor.get_train_examples(args.data_dir)
         num_train_optimization_steps = (
@@ -441,17 +441,15 @@ def main():
     ]
     if args.fp16:
         try:
-            from apex.optimizers import FP16_Optimizer, FusedAdam
+            from apex.fp16_utils.fp16_optimizer import FP16_Optimizer
+            from apex.optimizers import FusedAdam
         except ImportError:
             raise ImportError(
                 "Please install apex from https://www.github.com/nvidia/apex to use distributed and fp16 training."
             )
 
         optimizer = FusedAdam(
-            optimizer_grouped_parameters,
-            lr=args.learning_rate,
-            bias_correction=False,
-            max_grad_norm=1.0,
+            optimizer_grouped_parameters, lr=args.learning_rate, bias_correction=False,
         )
         if args.loss_scale == 0:
             optimizer = FP16_Optimizer(optimizer, dynamic_loss_scale=True)
@@ -478,6 +476,8 @@ def main():
     val_best_f1 = -1
     val_best_loss = 1e10
     early_stop_countdown = args.early_stop
+    if args.do_train:
+        eval_step = num_train_optimization_steps / 5
 
     if args.reg_explanations:
         train_lm_dataloder = processor.get_dataloader("train", configs.train_batch_size)
@@ -597,7 +597,7 @@ def main():
                     optimizer.zero_grad()
                     global_step += 1
 
-                if global_step % 400 == 0:
+                if global_step % eval_step == 0:
                     val_result = validate(
                         args,
                         model,

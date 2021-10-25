@@ -35,7 +35,7 @@ explanation result is saved in `output_dir`
 
 ## 3. Visualize
 
-`./scripts/run_visualize.sh``
+`./scripts/run_visualize.sh`
 
 - `--input_file` : file dir to visualize (*.txt, *.heix)
 - `--hiex` : true if hierarchical explanation

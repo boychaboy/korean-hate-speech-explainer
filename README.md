@@ -44,13 +44,13 @@ explanation result is saved in `output_dir`
 
 # Final output
 
-Example of Sequencial Explanation
+**Before debiasing** with Sampling and Occlusion algorithm
 
-![fig_8.png](img/seq_fig.png)
+![fig_0](https://user-images.githubusercontent.com/48426904/138645281-76569acb-e795-4696-9079-6051cfa13a6f.png)
 
-Example of Hierarchical Explanation
+**After debiasing**
 
-![fig_8.png](img/hiex_fig.png)
+![fig_0](https://user-images.githubusercontent.com/48426904/138645358-2a130093-b3c8-4003-8959-aacdc5ef8547.png)
 
 # How to modify (if you want to apply this method to other data)
 

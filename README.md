@@ -1,6 +1,6 @@
 # Korean Hate Speech Classification and Explanation
 
-> This repository is a source code of a paper : *Automatic Prediction and Linguistic Interpretation of Chinese Directional Complements(趋向补语) Based on BERT Model*
+> This repository modified the source code of a paper : *Automatic Prediction and Linguistic Interpretation of Chinese Directional Complements(趋向补语) Based on BERT Model, **CLSW 2021**
 
 - We used Sampling and Occlusion algorithm used in [Contextualizing Hate Speech Classifiers with Post-hoc Explanation](https://arxiv.org/pdf/2005.02439.pdf) 
 - This code is reimplementation of [original code](https://inklab.usc.edu/contextualize-hate-speech/)

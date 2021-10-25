@@ -7,7 +7,7 @@
 
 # Environment
 
-`conda create -f environment.yaml`
+`conda create -f environment.yaml`. 
 `conda activate soc_env`
 
 # How to run

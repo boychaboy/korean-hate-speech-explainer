@@ -14,13 +14,13 @@
 
 ## 1. Train
 
-`./scripts/run_train_buyu.sh {gpu_id}` 
-- Automatically trains four 补语 classifiers (下去，下来，出来，起来)
-- You can change hyperparameters from script
+`./scripts/run_train.sh {gpu_id}` 
+- Automatically trains classifier
+- You can change model hyperparameters from script
 
 ## 2. Explain
 
-`./scripts/run_explain_buyu.sh {gpu_id}`
+`./scripts/run_explain.sh {gpu_id}`
 
 runs explanation with the `test` data
 
@@ -35,10 +35,9 @@ explanation result is saved in `output_dir`
 
 ## 3. Visualize
 
-`./scripts/run_visualize_buyu.sh``
+`./scripts/run_visualize.sh``
 
 - `--input_file` : file dir to visualize (*.txt, *.heix)
-- `--buyu` : buyu #
 - `--hiex` : true if hierarchical explanation
 
 ---
@@ -53,15 +52,14 @@ Example of Hierarchical Explanation
 
 ![fig_8.png](img/hiex_fig.png)
 
-# How to modify
+# How to modify (if you want to apply this method to other data)
 
 ## 1. Prepare data
 
 ```bash
-|----data/buyu
+|----data/beep
 |----|----train.json
 |----|----dev.json
-|----|----test.json
 ```
 
 - `Binary label`
